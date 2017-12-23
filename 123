@@ -1,0 +1,58 @@
+```
+import os
+from Crypto.Cipher import AES
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+from axolotl.kdf.hkdfv3 import HKDFv3
+from axolotl.util.byteutil import ByteUtil
+import binascii
+import base64
+
+from urlparse import urlparse
+import magic
+
+def decrypt(encimg, refKey, encKey):
+	derivative = HKDFv3().deriveSecrets(refKey, binascii.unhexlify(encKey), 112)
+	parts = ByteUtil.split(derivative, 16, 32)
+	iv = parts[0]
+	cipherKey = parts[1]
+	e_img = encimg[:-10]
+	AES.key_size=128
+	cr_obj = AES.new(key=cipherKey, mode=AES.MODE_CBC, IV=iv)
+	return cr_obj.decrypt(e_img)
+
+
+def decMedia(url, key, mediaType):
+	data = urlopen(url.decode('ASCII')).read()
+	decData = decrypt(data, base64.b64decode(key), getKey(mediaType)) 
+	if(magic.from_buffer(decData) != "data"):
+		print "https://github.com/tgalal/yowsupDone"
+	else:
+		print "Failed"
+
+def getKey(mediaType):
+	if mediaType == 1:	#image
+		return "576861747341707020496d616765204b657973"
+	if mediaType == 3:	#video
+		return "576861747341707020566964656f204b657973"
+	return None
+	
+def getExt(mediaType):
+        if mediaType == 1:
+            return ".jpeg"
+        if mediaType == "audio" or mediaType == "ptt":
+            return ".wma"
+        if mediaType == 3:
+            return ".mp4"
+        if type == "document":
+            if filename is not None:
+                return "." + filename.split(".")[-1]
+        return None
+
+decMedia(media_url, media_enc_hash, media_wa_type)
+```
+
+media_url contains url from column media_url, media_enc_hash contains base-64 string from media_enc_hash and also media_wa_type contains int from media_wa_type.
+Why i cnt decode any image or video?
